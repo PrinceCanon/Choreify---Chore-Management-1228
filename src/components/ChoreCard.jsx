@@ -1,25 +1,24 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { format, isToday, isPast } from 'date-fns';
+import { useLeaderboard } from '../contexts/LeaderboardContext';
 import SafeIcon from '../common/SafeIcon';
 import * as FiIcons from 'react-icons/fi';
 
-const { FiClock, FiUser, FiCalendar, FiCheck, FiX, FiEdit, FiTrash2 } = FiIcons;
+const { FiClock, FiUser, FiCalendar, FiCheck, FiX, FiEdit, FiTrash2, FiTarget } = FiIcons;
 
 const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) => {
+  const { getPointsForChore } = useLeaderboard();
   const isOverdue = chore.dueDate && isPast(new Date(chore.dueDate)) && !chore.completed;
   const isDueToday = chore.dueDate && isToday(new Date(chore.dueDate));
+  const points = getPointsForChore(chore);
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'high':
-        return 'text-danger-600 bg-danger-50';
-      case 'medium':
-        return 'text-warning-600 bg-warning-50';
-      case 'low':
-        return 'text-success-600 bg-success-50';
-      default:
-        return 'text-gray-600 bg-gray-50';
+      case 'high': return 'text-danger-600 bg-danger-50';
+      case 'medium': return 'text-warning-600 bg-warning-50';
+      case 'low': return 'text-success-600 bg-success-50';
+      default: return 'text-gray-600 bg-gray-50';
     }
   };
 
@@ -40,12 +39,20 @@ const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) 
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center mb-2">
-            <h3 className={`font-semibold text-lg ${chore.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+            <h3 className={`font-semibold text-lg ${
+              chore.completed ? 'line-through text-gray-500' : 'text-gray-900'
+            }`}>
               {chore.title}
             </h3>
             {chore.priority && (
               <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(chore.priority)}`}>
                 {chore.priority}
+              </span>
+            )}
+            {chore.completed && (
+              <span className="ml-2 px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 flex items-center">
+                <SafeIcon icon={FiTarget} className="w-3 h-3 mr-1" />
+                {points} pts
               </span>
             )}
           </div>
@@ -108,7 +115,6 @@ const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) 
                 <SafeIcon icon={FiX} className="w-5 h-5" />
               </motion.button>
             )}
-            
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -118,7 +124,6 @@ const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) 
             >
               <SafeIcon icon={FiEdit} className="w-5 h-5" />
             </motion.button>
-            
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}

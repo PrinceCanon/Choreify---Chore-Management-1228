@@ -14,7 +14,6 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
     priority: 'medium',
     recurring: '',
   });
-
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -42,15 +41,12 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
 
   const validate = () => {
     const newErrors = {};
-    
     if (!formData.title.trim()) {
       newErrors.title = 'Title is required';
     }
-    
     if (formData.dueDate && new Date(formData.dueDate) < new Date().setHours(0, 0, 0, 0)) {
       newErrors.dueDate = 'Due date cannot be in the past';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -86,7 +82,6 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
             className="fixed inset-0 bg-black bg-opacity-50"
             onClick={onClose}
           />
-          
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -97,14 +92,13 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
               <h2 className="text-xl font-semibold text-gray-900">
                 {chore ? 'Edit Chore' : 'Add New Chore'}
               </h2>
-              <button
+              <button 
                 onClick={onClose}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <SafeIcon icon={FiX} className="w-5 h-5" />
               </button>
             </div>
-
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -115,7 +109,7 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className={`input-field ${errors.title ? 'border-danger-500' : ''}`}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${errors.title ? 'border-danger-500 bg-danger-50' : 'border-gray-300'}`}
                   placeholder="Enter chore title"
                 />
                 {errors.title && (
@@ -125,7 +119,6 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
                   </div>
                 )}
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description
@@ -135,23 +128,21 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={3}
-                  className="input-field resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 resize-none"
                   placeholder="Enter chore description (optional)"
                 />
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <SafeIcon icon={FiCalendar} className="w-4 h-4 inline mr-1" />
-                    Due Date
+                    <SafeIcon icon={FiCalendar} className="w-4 h-4 inline mr-1" /> Due Date
                   </label>
                   <input
                     type="date"
                     name="dueDate"
                     value={formData.dueDate}
                     onChange={handleInputChange}
-                    className={`input-field ${errors.dueDate ? 'border-danger-500' : ''}`}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${errors.dueDate ? 'border-danger-500 bg-danger-50' : 'border-gray-300'}`}
                   />
                   {errors.dueDate && (
                     <div className="flex items-center mt-1 text-sm text-danger-600">
@@ -160,7 +151,6 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
                     </div>
                   )}
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Priority
@@ -169,7 +159,7 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
                     name="priority"
                     value={formData.priority}
                     onChange={handleInputChange}
-                    className="input-field"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -177,32 +167,28 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
                   </select>
                 </div>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <SafeIcon icon={FiUser} className="w-4 h-4 inline mr-1" />
-                  Assigned To
+                  <SafeIcon icon={FiUser} className="w-4 h-4 inline mr-1" /> Assigned To
                 </label>
                 <input
                   type="text"
                   name="assignedTo"
                   value={formData.assignedTo}
                   onChange={handleInputChange}
-                  className="input-field"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                   placeholder="Enter assignee name"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <SafeIcon icon={FiRepeat} className="w-4 h-4 inline mr-1" />
-                  Recurring
+                  <SafeIcon icon={FiRepeat} className="w-4 h-4 inline mr-1" /> Recurring
                 </label>
                 <select
                   name="recurring"
                   value={formData.recurring}
                   onChange={handleInputChange}
-                  className="input-field"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                 >
                   <option value="">No repeat</option>
                   <option value="daily">Daily</option>
@@ -210,18 +196,17 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
                   <option value="monthly">Monthly</option>
                 </select>
               </div>
-
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 btn-outline"
+                  className="flex-1 border-2 border-gray-300 hover:border-primary-500 text-gray-700 hover:text-primary-500 font-medium py-3 px-6 rounded-xl hover:bg-primary-50 transition-all duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 btn-primary"
+                  className="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg transition-all duration-200"
                 >
                   {chore ? 'Update' : 'Add'} Chore
                 </button>

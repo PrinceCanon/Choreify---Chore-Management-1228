@@ -64,14 +64,12 @@ const ChoreProvider = ({ children }) => {
 
   const completeChore = (choreId) => {
     const updatedChores = chores.map(chore =>
-      chore.id === choreId
-        ? {
-            ...chore,
-            completed: true,
-            completedAt: new Date().toISOString(),
-            completedBy: user.id,
-          }
-        : chore
+      chore.id === choreId ? {
+        ...chore,
+        completed: true,
+        completedAt: new Date().toISOString(),
+        completedBy: user.id,
+      } : chore
     );
     saveChores(updatedChores);
     showNotification('Chore completed! Great job! 🎉', 'success');
@@ -79,14 +77,12 @@ const ChoreProvider = ({ children }) => {
 
   const uncompleteChore = (choreId) => {
     const updatedChores = chores.map(chore =>
-      chore.id === choreId
-        ? {
-            ...chore,
-            completed: false,
-            completedAt: null,
-            completedBy: null,
-          }
-        : chore
+      chore.id === choreId ? {
+        ...chore,
+        completed: false,
+        completedAt: null,
+        completedBy: null,
+      } : chore
     );
     saveChores(updatedChores);
     showNotification('Chore marked as incomplete', 'info');
@@ -108,18 +104,18 @@ const ChoreProvider = ({ children }) => {
 
   const getOverdueChores = () => {
     const now = new Date();
-    return chores.filter(chore => 
-      !chore.completed && 
-      chore.dueDate && 
+    return chores.filter(chore =>
+      !chore.completed &&
+      chore.dueDate &&
       new Date(chore.dueDate) < now
     );
   };
 
   const getTodaysChores = () => {
     const today = new Date().toDateString();
-    return chores.filter(chore => 
-      !chore.completed && 
-      chore.dueDate && 
+    return chores.filter(chore =>
+      !chore.completed &&
+      chore.dueDate &&
       new Date(chore.dueDate).toDateString() === today
     );
   };
@@ -138,7 +134,11 @@ const ChoreProvider = ({ children }) => {
     getTodaysChores,
   };
 
-  return <ChoreContext.Provider value={value}>{children}</ChoreContext.Provider>;
+  return (
+    <ChoreContext.Provider value={value}>
+      {children}
+    </ChoreContext.Provider>
+  );
 };
 
 export default ChoreProvider;

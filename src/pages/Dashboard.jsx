@@ -2,27 +2,28 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useChores } from '../contexts/ChoreContext';
 import { useAuth } from '../hooks/useAuth';
+import { useLeaderboard } from '../contexts/LeaderboardContext';
 import ChoreCard from '../components/ChoreCard';
 import ChoreModal from '../components/ChoreModal';
 import SafeIcon from '../common/SafeIcon';
 import * as FiIcons from 'react-icons/fi';
 
-const { FiPlus, FiFilter, FiCheckSquare, FiClock, FiAlertTriangle, FiTrendingUp } = FiIcons;
+const { FiPlus, FiFilter, FiCheckSquare, FiClock, FiAlertTriangle, FiTrendingUp, FiTrophy } = FiIcons;
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { 
-    chores, 
-    addChore, 
-    updateChore, 
-    completeChore, 
-    uncompleteChore, 
+  const {
+    chores,
+    addChore,
+    updateChore,
+    completeChore,
+    uncompleteChore,
     deleteChore,
     getChoresByStatus,
     getOverdueChores,
-    getTodaysChores 
+    getTodaysChores
   } = useChores();
-  
+  const { getUserPoints, getUserRank, leaderboardEnabled } = useLeaderboard();
   const [showModal, setShowModal] = useState(false);
   const [editingChore, setEditingChore] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -32,6 +33,9 @@ const Dashboard = () => {
   const pendingChores = getChoresByStatus(false);
   const overdueChores = getOverdueChores();
   const todaysChores = getTodaysChores();
+
+  const userPoints = getUserPoints(user?.id);
+  const userRank = getUserRank(user?.id);
 
   const handleAddChore = (choreData) => {
     addChore(choreData);
@@ -69,19 +73,19 @@ const Dashboard = () => {
 
   const getFilteredChores = () => {
     let filtered = viewMode === 'completed' ? completedChores : pendingChores;
-    
+
     if (filter === 'today') {
-      filtered = filtered.filter(chore => 
-        chore.dueDate && new Date(chore.dueDate).toDateString() === new Date().toDateString()
+      filtered = filtered.filter(
+        chore => chore.dueDate && new Date(chore.dueDate).toDateString() === new Date().toDateString()
       );
     } else if (filter === 'overdue') {
-      filtered = filtered.filter(chore => 
-        chore.dueDate && new Date(chore.dueDate) < new Date() && !chore.completed
+      filtered = filtered.filter(
+        chore => chore.dueDate && new Date(chore.dueDate) < new Date() && !chore.completed
       );
     } else if (filter === 'mine') {
-      filtered = filtered.filter(chore => chore.assignedTo === user.name);
+      filtered = filtered.filter(chore => chore.assignedTo === user?.name);
     }
-    
+
     return filtered;
   };
 
@@ -117,7 +121,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 lg:pb-0">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -126,7 +130,7 @@ const Dashboard = () => {
       >
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
-            Welcome back, {user?.name}! 👋
+            Welcome{user?.name ? `, ${user.name}` : ''}! 👋
           </h1>
           <p className="text-gray-600 mt-1">
             Let's get those chores done today
@@ -136,12 +140,36 @@ const Dashboard = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowModal(true)}
-          className="btn-primary flex items-center mt-4 sm:mt-0"
+          className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center mt-4 sm:mt-0"
         >
           <SafeIcon icon={FiPlus} className="w-5 h-5 mr-2" />
           Add Chore
         </motion.button>
       </motion.div>
+
+      {/* User Stats & Leaderboard Info */}
+      {leaderboardEnabled && userRank && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-2xl shadow-lg p-6 text-white"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <SafeIcon icon={FiTrophy} className="w-8 h-8 mr-3" />
+              <div>
+                <h3 className="text-lg font-semibold">Your Ranking</h3>
+                <p className="text-yellow-100">Keep up the great work!</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-bold">#{userRank}</div>
+              <div className="text-sm text-yellow-100">{userPoints} points</div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -151,7 +179,7 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className={`card p-6 ${stat.bgColor}`}
+            className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 p-6 ${stat.bgColor}`}
           >
             <div className="flex items-center">
               <div className={`p-3 rounded-lg ${stat.color} ${stat.bgColor}`}>
@@ -212,7 +240,7 @@ const Dashboard = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-12"
+            className="text-center py-12 bg-white rounded-2xl shadow-sm border border-gray-100 p-8"
           >
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <SafeIcon icon={FiCheckSquare} className="w-8 h-8 text-gray-400" />
@@ -221,16 +249,16 @@ const Dashboard = () => {
               {viewMode === 'completed' ? 'No completed chores yet' : 'No chores found'}
             </h3>
             <p className="text-gray-600 mb-4">
-              {viewMode === 'completed' 
-                ? 'Complete some chores to see them here' 
+              {viewMode === 'completed'
+                ? 'Complete some chores to see them here'
                 : 'Add your first chore to get started'}
             </p>
             {viewMode === 'pending' && (
               <button
                 onClick={() => setShowModal(true)}
-                className="btn-primary"
+                className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg transition-all duration-200"
               >
-                <SafeIcon icon={FiPlus} className="w-5 h-5 mr-2" />
+                <SafeIcon icon={FiPlus} className="w-5 h-5 mr-2 inline" />
                 Add Your First Chore
               </button>
             )}

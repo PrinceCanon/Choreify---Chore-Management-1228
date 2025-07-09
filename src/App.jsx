@@ -4,10 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AuthProvider from './contexts/AuthContext';
 import ChoreProvider from './contexts/ChoreContext';
 import NotificationProvider from './contexts/NotificationContext';
+import LeaderboardProvider from './contexts/LeaderboardContext';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import HouseholdPage from './pages/HouseholdPage';
 import ProfilePage from './pages/ProfilePage';
+import LeaderboardPage from './pages/LeaderboardPage';
 import Layout from './components/Layout';
 import { useAuth } from './hooks/useAuth';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -34,7 +36,7 @@ function AppContent() {
           className="text-center"
         >
           <LoadingSpinner size="large" />
-          <motion.h1 
+          <motion.h1
             className="text-4xl font-bold text-primary-600 mt-6 mb-2"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -42,7 +44,7 @@ function AppContent() {
           >
             Choreify
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="text-gray-600"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -59,14 +61,12 @@ function AppContent() {
     <Router>
       <AnimatePresence mode="wait">
         <Routes>
-          <Route 
-            path="/login" 
-            element={
-              user ? <Navigate to="/dashboard" replace /> : <LoginPage />
-            } 
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />}
           />
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/dashboard"
             element={
               user ? (
                 <Layout>
@@ -75,10 +75,10 @@ function AppContent() {
               ) : (
                 <Navigate to="/login" replace />
               )
-            } 
+            }
           />
-          <Route 
-            path="/household" 
+          <Route
+            path="/household"
             element={
               user ? (
                 <Layout>
@@ -87,10 +87,22 @@ function AppContent() {
               ) : (
                 <Navigate to="/login" replace />
               )
-            } 
+            }
           />
-          <Route 
-            path="/profile" 
+          <Route
+            path="/leaderboard"
+            element={
+              user ? (
+                <Layout>
+                  <LeaderboardPage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/profile"
             element={
               user ? (
                 <Layout>
@@ -99,13 +111,11 @@ function AppContent() {
               ) : (
                 <Navigate to="/login" replace />
               )
-            } 
+            }
           />
-          <Route 
-            path="/" 
-            element={
-              <Navigate to={user ? "/dashboard" : "/login"} replace />
-            } 
+          <Route
+            path="/"
+            element={<Navigate to={user ? "/dashboard" : "/login"} replace />}
           />
         </Routes>
       </AnimatePresence>
@@ -118,7 +128,9 @@ function App() {
     <AuthProvider>
       <NotificationProvider>
         <ChoreProvider>
-          <AppContent />
+          <LeaderboardProvider>
+            <AppContent />
+          </LeaderboardProvider>
         </ChoreProvider>
       </NotificationProvider>
     </AuthProvider>

@@ -9,12 +9,12 @@ const Layout = ({ children }) => {
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 lg:ml-64">
+        <main className="flex-1 lg:ml-64" style={{ minHeight: 'calc(100vh - 4rem)' }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="p-4 lg:p-8"
+            className="p-4 lg:p-8 pb-20 lg:pb-8"
           >
             {children}
           </motion.div>

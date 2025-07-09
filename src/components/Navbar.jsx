@@ -5,7 +5,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import SafeIcon from '../common/SafeIcon';
 import * as FiIcons from 'react-icons/fi';
 
-const { FiBell, FiSettings, FiLogOut, FiMenu, FiX } = FiIcons;
+const { FiBell, FiSettings, FiLogOut, FiMenu, FiX, FiUser } = FiIcons;
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -25,7 +25,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40 h-16">
       <div className="px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Mobile Menu Button */}
@@ -62,47 +62,57 @@ const Navbar = () => {
             </button>
 
             {/* Profile Menu */}
-            <div className="relative">
-              <button
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <img
-                  src={user?.avatar}
-                  alt={user?.name}
-                  className="w-8 h-8 rounded-full"
-                />
-                <span className="hidden sm:block font-medium text-gray-700">{user?.name}</span>
-              </button>
-
-              {/* Profile Dropdown */}
-              {showProfileMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50"
+            {user && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                    <p className="text-xs text-gray-500">{user?.email}</p>
+                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-200">
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-primary-100 text-primary-700 flex items-center justify-center">
+                        {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                    )}
                   </div>
-                  <button
-                    onClick={() => setShowProfileMenu(false)}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                  <span className="hidden sm:block font-medium text-gray-700">{user?.name || 'User'}</span>
+                </button>
+
+                {/* Profile Dropdown */}
+                {showProfileMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50"
                   >
-                    <SafeIcon icon={FiSettings} className="w-4 h-4 mr-2" />
-                    Settings
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
-                  >
-                    <SafeIcon icon={FiLogOut} className="w-4 h-4 mr-2" />
-                    Logout
-                  </button>
-                </motion.div>
-              )}
-            </div>
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">{user?.name || 'User'}</p>
+                      <p className="text-xs text-gray-500">{user?.email || 'user@example.com'}</p>
+                    </div>
+                    <button
+                      onClick={() => setShowProfileMenu(false)}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                    >
+                      <SafeIcon icon={FiSettings} className="w-4 h-4 mr-2" />
+                      Settings
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
+                    >
+                      <SafeIcon icon={FiLogOut} className="w-4 h-4 mr-2" />
+                      Logout
+                    </button>
+                  </motion.div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

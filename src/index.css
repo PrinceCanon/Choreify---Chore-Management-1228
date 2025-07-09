@@ -13,6 +13,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #f8fafc;
+  color: #334155;
 }
 
 #root {
@@ -40,8 +41,11 @@ body {
 
 /* Smooth animations */
 * {
-  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, 
-              box-shadow 0.2s ease, transform 0.2s ease;
+  transition: color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 /* Focus styles */
@@ -70,27 +74,19 @@ select:focus {
 
 /* Custom button styles */
 .btn-primary {
-  @apply bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 
-         text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl 
-         transform hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-primary-200;
+  @apply bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-4 focus:ring-primary-200;
 }
 
 .btn-secondary {
-  @apply bg-gradient-to-r from-secondary-500 to-secondary-600 hover:from-secondary-600 hover:to-secondary-700 
-         text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl 
-         transform hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-secondary-200;
+  @apply bg-gradient-to-r from-secondary-500 to-secondary-600 hover:from-secondary-600 hover:to-secondary-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-4 focus:ring-secondary-200;
 }
 
 .btn-success {
-  @apply bg-gradient-to-r from-success-500 to-success-600 hover:from-success-600 hover:to-success-700 
-         text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl 
-         transform hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-success-200;
+  @apply bg-gradient-to-r from-success-500 to-success-600 hover:from-success-600 hover:to-success-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-4 focus:ring-success-200;
 }
 
 .btn-outline {
-  @apply border-2 border-gray-300 hover:border-primary-500 text-gray-700 hover:text-primary-500 
-         font-medium py-3 px-6 rounded-xl hover:bg-primary-50 
-         transition-all duration-200 focus:ring-4 focus:ring-primary-200;
+  @apply border-2 border-gray-300 hover:border-primary-500 text-gray-700 hover:text-primary-500 font-medium py-3 px-6 rounded-xl hover:bg-primary-50 transition-all duration-200 focus:ring-4 focus:ring-primary-200;
 }
 
 /* Card styles */
@@ -99,13 +95,12 @@ select:focus {
 }
 
 .card-hover {
-  @apply transform hover:scale-105 hover:-translate-y-1;
+  @apply transform hover:scale-102 hover:-translate-y-1;
 }
 
 /* Input styles */
 .input-field {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 
-         focus:border-transparent placeholder-gray-400 transition-all duration-200;
+  @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-400 transition-all duration-200;
 }
 
 /* Animation classes */
@@ -123,8 +118,7 @@ select:focus {
 
 /* Notification styles */
 .notification {
-  @apply fixed top-4 right-4 z-50 max-w-sm w-full bg-white rounded-xl shadow-lg border border-gray-200 
-         p-4 transform transition-all duration-300;
+  @apply fixed top-4 right-4 z-50 max-w-sm w-full bg-white rounded-xl shadow-lg border border-gray-200 p-4 transform transition-all duration-300;
 }
 
 .notification.success {
@@ -166,4 +160,58 @@ select:focus {
   .card {
     @apply rounded-xl;
   }
+}
+
+/* Mobile padding for main content */
+@media (max-width: 1024px) {
+  main {
+    padding-bottom: 6rem !important;
+  }
+}
+
+/* Better form styling */
+input, select, textarea {
+  @apply appearance-none;
+}
+
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4-4 4 4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+/* Safe area support for mobile devices */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Sidebar specific styles */
+.sidebar-container {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+}
+
+/* Ensure proper scrolling in sidebar */
+.sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
