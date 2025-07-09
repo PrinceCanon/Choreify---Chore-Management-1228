@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8fafc;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Smooth animations */
+* {
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, 
+              box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* Focus styles */
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom button styles */
+.btn-primary {
+  @apply bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 
+         text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl 
+         transform hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-primary-200;
+}
+
+.btn-secondary {
+  @apply bg-gradient-to-r from-secondary-500 to-secondary-600 hover:from-secondary-600 hover:to-secondary-700 
+         text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl 
+         transform hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-secondary-200;
+}
+
+.btn-success {
+  @apply bg-gradient-to-r from-success-500 to-success-600 hover:from-success-600 hover:to-success-700 
+         text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl 
+         transform hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-success-200;
+}
+
+.btn-outline {
+  @apply border-2 border-gray-300 hover:border-primary-500 text-gray-700 hover:text-primary-500 
+         font-medium py-3 px-6 rounded-xl hover:bg-primary-50 
+         transition-all duration-200 focus:ring-4 focus:ring-primary-200;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100;
+}
+
+.card-hover {
+  @apply transform hover:scale-105 hover:-translate-y-1;
+}
+
+/* Input styles */
+.input-field {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 
+         focus:border-transparent placeholder-gray-400 transition-all duration-200;
+}
+
+/* Animation classes */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-bounce-gentle {
+  animation: bounceGentle 0.6s ease-in-out;
+}
+
+/* Notification styles */
+.notification {
+  @apply fixed top-4 right-4 z-50 max-w-sm w-full bg-white rounded-xl shadow-lg border border-gray-200 
+         p-4 transform transition-all duration-300;
+}
+
+.notification.success {
+  @apply border-success-200 bg-success-50;
+}
+
+.notification.error {
+  @apply border-danger-200 bg-danger-50;
+}
+
+.notification.warning {
+  @apply border-warning-200 bg-warning-50;
+}
+
+.notification.info {
+  @apply border-primary-200 bg-primary-50;
+}
+
+/* Loading animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .btn-primary,
+  .btn-secondary,
+  .btn-success,
+  .btn-outline {
+    @apply py-2 px-4 text-sm;
+  }
+  
+  .card {
+    @apply rounded-xl;
+  }
+}
