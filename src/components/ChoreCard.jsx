@@ -4,58 +4,37 @@ import { format, isToday, isPast } from 'date-fns';
 import { useLeaderboard } from '../contexts/LeaderboardContext';
 import { useCalendar } from '../contexts/CalendarContext';
 import { useCollaboration } from '../contexts/CollaborationContext';
+import { useCategories } from '../contexts/CategoryContext';
 import { useAuth } from '../hooks/useAuth';
 import SafeIcon from '../common/SafeIcon';
 import ChoreCommentsModal from './ChoreCommentsModal';
 import * as FiIcons from 'react-icons/fi';
 
-const { 
-  FiClock, 
-  FiUser, 
-  FiCalendar, 
-  FiCheck, 
-  FiX, 
-  FiEdit, 
-  FiTrash2, 
-  FiTarget,
-  FiMessageSquare,
-  FiCheckSquare,
-  FiAlertTriangle,
-  FiRepeat,
-  FiShare
-} = FiIcons;
+const { FiClock, FiUser, FiCalendar, FiCheck, FiX, FiEdit, FiTrash2, FiTarget, FiMessageSquare, FiCheckSquare, FiAlertTriangle, FiRepeat, FiShare } = FiIcons;
 
 const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) => {
   const { user } = useAuth();
   const { getPointsForChore } = useLeaderboard();
   const { connected, getChoreCalendarStatus } = useCalendar();
-  const { 
-    getCommentsByChoreId, 
-    markForApproval, 
-    approveChore, 
-    rejectChore,
-    putChoreUpForGrabs,
-    getChoreSwapStatus,
-    cancelSwappableChore,
-    claimChore
-  } = useCollaboration();
-  
+  const { getCommentsByChoreId, markForApproval, approveChore, rejectChore, putChoreUpForGrabs, getChoreSwapStatus, cancelSwappableChore, claimChore } = useCollaboration();
+  const { getCategoryById, getIconComponent } = useCategories();
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [showApprovalOptions, setShowApprovalOptions] = useState(false);
-  
+
   const isOverdue = chore.dueDate && isPast(new Date(chore.dueDate)) && !chore.completed;
   const isDueToday = chore.dueDate && isToday(new Date(chore.dueDate));
   const points = getPointsForChore(chore);
   const calendarStatus = connected ? getChoreCalendarStatus(chore.id) : null;
   const comments = getCommentsByChoreId(chore.id);
   const swapStatus = getChoreSwapStatus(chore.id);
-  
+  const category = getCategoryById(chore.categoryId);
+
   // Check if this chore is completed but needs approval
   const needsApproval = chore.completed && chore.pendingApproval;
-  
+
   // Check if current user is the one who completed the chore
   const isCompletedByMe = chore.completedBy === user.id;
-  
+
   // Check if current user is assigned to this chore
   const isAssignedToMe = chore.assignedTo === user.name;
 
@@ -114,10 +93,7 @@ const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) 
   const handleClaimChore = () => {
     claimChore(swapStatus.id, chore.id, chore.title);
     // Update the assignee
-    onEdit({
-      ...chore,
-      assignedTo: user.name
-    });
+    onEdit({ ...chore, assignedTo: user.name });
   };
 
   return (
@@ -131,40 +107,67 @@ const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) 
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center mb-2">
-              <h3 className={`font-semibold text-lg ${
-                chore.completed ? 'line-through text-gray-500' : 'text-gray-900'
-              }`}>
-                {chore.title}
-              </h3>
-              {chore.priority && (
-                <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(chore.priority)}`}>
-                  {chore.priority}
-                </span>
+              {/* Category Icon */}
+              {category && (
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center mr-3 flex-shrink-0"
+                  style={{ backgroundColor: category.color + '20' }}
+                >
+                  <SafeIcon 
+                    icon={getIconComponent(category.icon)} 
+                    className="w-4 h-4" 
+                    style={{ color: category.color }}
+                  />
+                </div>
               )}
-              {chore.completed && !needsApproval && (
-                <span className="ml-2 px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 flex items-center">
-                  <SafeIcon icon={FiTarget} className="w-3 h-3 mr-1" />
-                  {points} pts
-                </span>
-              )}
-              {needsApproval && (
-                <span className="ml-2 px-2 py-1 rounded-full text-xs font-medium bg-warning-100 text-warning-800 flex items-center">
-                  <SafeIcon icon={FiAlertTriangle} className="w-3 h-3 mr-1" />
-                  Needs approval
-                </span>
-              )}
-              {connected && calendarStatus?.synced && !chore.completed && (
-                <span className="ml-2 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 flex items-center">
-                  <SafeIcon icon={FiCalendar} className="w-3 h-3 mr-1" />
-                  Synced
-                </span>
-              )}
-              {swapStatus && swapStatus.status === 'available' && (
-                <span className="ml-2 px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 flex items-center">
-                  <SafeIcon icon={FiShare} className="w-3 h-3 mr-1" />
-                  Up for grabs
-                </span>
-              )}
+              
+              <div className="flex-1">
+                <h3 className={`font-semibold text-lg ${chore.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                  {chore.title}
+                </h3>
+                
+                <div className="flex items-center flex-wrap gap-2 mt-1">
+                  {category && (
+                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                      {category.name}
+                    </span>
+                  )}
+                  
+                  {chore.priority && (
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(chore.priority)}`}>
+                      {chore.priority}
+                    </span>
+                  )}
+                  
+                  {chore.completed && !needsApproval && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 flex items-center">
+                      <SafeIcon icon={FiTarget} className="w-3 h-3 mr-1" />
+                      {points} pts
+                    </span>
+                  )}
+                  
+                  {needsApproval && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-warning-100 text-warning-800 flex items-center">
+                      <SafeIcon icon={FiAlertTriangle} className="w-3 h-3 mr-1" />
+                      Needs approval
+                    </span>
+                  )}
+                  
+                  {connected && calendarStatus?.synced && !chore.completed && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 flex items-center">
+                      <SafeIcon icon={FiCalendar} className="w-3 h-3 mr-1" />
+                      Synced
+                    </span>
+                  )}
+                  
+                  {swapStatus && swapStatus.status === 'available' && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 flex items-center">
+                      <SafeIcon icon={FiShare} className="w-3 h-3 mr-1" />
+                      Up for grabs
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
             {chore.description && (
@@ -180,23 +183,23 @@ const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) 
                   </span>
                 </div>
               )}
+              
               {chore.assignedTo && (
                 <div className="flex items-center">
                   <SafeIcon icon={FiUser} className="w-4 h-4 mr-1" />
                   <span>Assigned to {chore.assignedTo}</span>
                 </div>
               )}
+              
               {chore.recurring && (
                 <div className="flex items-center">
                   <SafeIcon icon={FiClock} className="w-4 h-4 mr-1" />
                   <span>Repeats {chore.recurring}</span>
                 </div>
               )}
+              
               {comments.length > 0 && (
-                <div 
-                  className="flex items-center cursor-pointer hover:text-primary-600"
-                  onClick={handleShowComments}
-                >
+                <div className="flex items-center cursor-pointer hover:text-primary-600" onClick={handleShowComments}>
                   <SafeIcon icon={FiMessageSquare} className="w-4 h-4 mr-1" />
                   <span>{comments.length} comment{comments.length !== 1 ? 's' : ''}</span>
                 </div>
@@ -209,20 +212,20 @@ const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) 
                 Completed on {format(new Date(chore.completedAt), 'MMM d, yyyy')}
               </div>
             )}
-            
+
             {needsApproval && (
               <div className="mt-2 text-sm text-warning-600">
                 <SafeIcon icon={FiAlertTriangle} className="w-4 h-4 mr-1 inline" />
                 Waiting for approval
               </div>
             )}
-            
+
             {swapStatus && swapStatus.status === 'available' && (
               <div className="mt-2 text-sm text-primary-600">
                 <SafeIcon icon={FiShare} className="w-4 h-4 mr-1 inline" />
                 Offered by {swapStatus.offeredByName}
                 {swapStatus.offeredBy !== user.id && (
-                  <button 
+                  <button
                     onClick={handleClaimChore}
                     className="ml-2 px-2 py-0.5 rounded bg-primary-100 hover:bg-primary-200 transition-colors"
                   >
@@ -322,7 +325,7 @@ const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) 
                   )}
                 </>
               )}
-
+              
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -332,7 +335,7 @@ const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) 
               >
                 <SafeIcon icon={FiMessageSquare} className="w-5 h-5" />
               </motion.button>
-
+              
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -342,7 +345,7 @@ const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) 
               >
                 <SafeIcon icon={FiEdit} className="w-5 h-5" />
               </motion.button>
-
+              
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -356,8 +359,8 @@ const ChoreCard = ({ chore, onComplete, onEdit, onDelete, showActions = true }) 
           )}
         </div>
       </motion.div>
-      
-      <ChoreCommentsModal 
+
+      <ChoreCommentsModal
         isOpen={showCommentsModal}
         onClose={() => setShowCommentsModal(false)}
         choreId={chore.id}

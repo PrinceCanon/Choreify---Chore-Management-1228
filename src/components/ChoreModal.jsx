@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCalendar } from '../contexts/CalendarContext';
+import { useCategories } from '../contexts/CategoryContext';
 import SafeIcon from '../common/SafeIcon';
 import * as FiIcons from 'react-icons/fi';
 
-const { FiX, FiCalendar, FiUser, FiRepeat, FiAlertCircle, FiCheckSquare } = FiIcons;
+const { FiX, FiCalendar, FiUser, FiRepeat, FiAlertCircle, FiCheckSquare, FiGrid } = FiIcons;
 
 const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
   const { connected, provider, formatProviderName } = useCalendar();
+  const { categories, getIconComponent } = useCategories();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -15,6 +17,7 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
     assignedTo: '',
     priority: 'medium',
     recurring: '',
+    categoryId: '',
     addToCalendar: true,
   });
   const [errors, setErrors] = useState({});
@@ -28,6 +31,7 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
         assignedTo: chore.assignedTo || '',
         priority: chore.priority || 'medium',
         recurring: chore.recurring || '',
+        categoryId: chore.categoryId || '',
         addToCalendar: true,
       });
     } else {
@@ -38,6 +42,7 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
         assignedTo: '',
         priority: 'medium',
         recurring: '',
+        categoryId: '',
         addToCalendar: true,
       });
     }
@@ -46,12 +51,15 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
 
   const validate = () => {
     const newErrors = {};
+    
     if (!formData.title.trim()) {
       newErrors.title = 'Title is required';
     }
+    
     if (formData.dueDate && new Date(formData.dueDate) < new Date().setHours(0, 0, 0, 0)) {
       newErrors.dueDate = 'Due date cannot be in the past';
     }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -74,6 +82,7 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -94,7 +103,7 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 relative"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 relative max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">
@@ -145,6 +154,30 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
                 />
               </div>
 
+              {/* Category Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <SafeIcon icon={FiGrid} className="w-4 h-4 inline mr-1" />
+                  Category
+                </label>
+                <select
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((category) => {
+                    const IconComponent = getIconComponent(category.icon);
+                    return (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -167,6 +200,7 @@ const ChoreModal = ({ isOpen, onClose, onSubmit, chore = null }) => {
                     </div>
                   )}
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Priority

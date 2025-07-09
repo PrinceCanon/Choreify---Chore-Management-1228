@@ -4,44 +4,29 @@ import { useChores } from '../contexts/ChoreContext';
 import { useAuth } from '../hooks/useAuth';
 import { useLeaderboard } from '../contexts/LeaderboardContext';
 import { useCollaboration } from '../contexts/CollaborationContext';
+import { useCategories } from '../contexts/CategoryContext';
 import ChoreCard from '../components/ChoreCard';
 import ChoreModal from '../components/ChoreModal';
 import ActivityFeed from '../components/ActivityFeed';
 import UpForGrabsModal from '../components/UpForGrabsModal';
+import CategoryManager from '../components/CategoryManager';
 import SafeIcon from '../common/SafeIcon';
 import * as FiIcons from 'react-icons/fi';
 
-const { 
-  FiPlus, 
-  FiFilter, 
-  FiCheckSquare, 
-  FiClock, 
-  FiAlertTriangle, 
-  FiTrendingUp, 
-  FiTrophy,
-  FiShare
-} = FiIcons;
+const { FiPlus, FiFilter, FiCheckSquare, FiClock, FiAlertTriangle, FiTrendingUp, FiTrophy, FiShare, FiGrid } = FiIcons;
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { 
-    chores, 
-    addChore, 
-    updateChore, 
-    completeChore: markChoreComplete, 
-    uncompleteChore, 
-    deleteChore,
-    getChoresByStatus,
-    getOverdueChores,
-    getTodaysChores
-  } = useChores();
+  const { chores, addChore, updateChore, completeChore: markChoreComplete, uncompleteChore, deleteChore, getChoresByStatus, getOverdueChores, getTodaysChores } = useChores();
   const { getUserPoints, getUserRank, leaderboardEnabled } = useLeaderboard();
   const { getAvailableChores } = useCollaboration();
-  
+  const { categories, getCategoryById, getIconComponent } = useCategories();
   const [showModal, setShowModal] = useState(false);
   const [showUpForGrabsModal, setShowUpForGrabsModal] = useState(false);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [editingChore, setEditingChore] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [viewMode, setViewMode] = useState('pending');
 
   const completedChores = getChoresByStatus(true);
@@ -49,7 +34,7 @@ const Dashboard = () => {
   const overdueChores = getOverdueChores();
   const todaysChores = getTodaysChores();
   const availableChores = getAvailableChores();
-  
+
   const userPoints = getUserPoints(user?.id);
   const userRank = getUserRank(user?.id);
 
@@ -64,7 +49,6 @@ const Dashboard = () => {
 
   const handleCompleteChore = (choreId, isComplete, pendingApproval = true) => {
     const chore = chores.find(c => c.id === choreId);
-    
     if (chore.completed) {
       uncompleteChore(choreId);
     } else {
@@ -92,6 +76,12 @@ const Dashboard = () => {
   const getFilteredChores = () => {
     let filtered = viewMode === 'completed' ? completedChores : pendingChores;
 
+    // Apply category filter
+    if (categoryFilter !== 'all') {
+      filtered = filtered.filter(chore => chore.categoryId === categoryFilter);
+    }
+
+    // Apply other filters
     if (filter === 'today') {
       filtered = filtered.filter(
         chore => chore.dueDate && new Date(chore.dueDate).toDateString() === new Date().toDateString()
@@ -154,8 +144,17 @@ const Dashboard = () => {
           </h1>
           <p className="text-gray-600 mt-1">Let's get those chores done today</p>
         </div>
-        
         <div className="flex space-x-2 mt-4 sm:mt-0">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowCategoryManager(true)}
+            className="border-2 border-gray-300 hover:border-primary-500 text-gray-700 hover:text-primary-500 font-medium py-3 px-6 rounded-xl hover:bg-primary-50 transition-all duration-200 flex items-center"
+          >
+            <SafeIcon icon={FiGrid} className="w-5 h-5 mr-2" />
+            Categories
+          </motion.button>
+          
           {availableChores.length > 0 && (
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -253,8 +252,23 @@ const Dashboard = () => {
                 Completed ({completedChores.length})
               </button>
             </div>
-
+            
             <div className="flex items-center space-x-2">
+              {/* Category Filter */}
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              >
+                <option value="all">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* General Filter */}
               <SafeIcon icon={FiFilter} className="w-5 h-5 text-gray-400" />
               <select
                 value={filter}
@@ -332,6 +346,11 @@ const Dashboard = () => {
       <UpForGrabsModal
         isOpen={showUpForGrabsModal}
         onClose={() => setShowUpForGrabsModal(false)}
+      />
+      
+      <CategoryManager
+        isOpen={showCategoryManager}
+        onClose={() => setShowCategoryManager(false)}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../contexts/NotificationContext';
 import SafeIcon from '../common/SafeIcon';
@@ -8,6 +9,7 @@ import * as FiIcons from 'react-icons/fi';
 const { FiBell, FiSettings, FiLogOut, FiMenu, FiX, FiUser } = FiIcons;
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { permission, requestPermission } = useNotification();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -21,6 +23,11 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
+    setShowProfileMenu(false);
+  };
+
+  const handleNavigateToProfile = () => {
+    navigate('/profile');
     setShowProfileMenu(false);
   };
 
@@ -70,11 +77,7 @@ const Navbar = () => {
                 >
                   <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-200">
                     {user?.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-primary-100 text-primary-700 flex items-center justify-center">
                         {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
@@ -96,7 +99,7 @@ const Navbar = () => {
                       <p className="text-xs text-gray-500">{user?.email || 'user@example.com'}</p>
                     </div>
                     <button
-                      onClick={() => setShowProfileMenu(false)}
+                      onClick={handleNavigateToProfile}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                     >
                       <SafeIcon icon={FiSettings} className="w-4 h-4 mr-2" />

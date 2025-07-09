@@ -7,6 +7,7 @@ import NotificationProvider from './contexts/NotificationContext';
 import LeaderboardProvider from './contexts/LeaderboardContext';
 import CalendarProvider from './contexts/CalendarContext';
 import CollaborationProvider from './contexts/CollaborationContext';
+import CategoryProvider from './contexts/CategoryContext';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import HouseholdPage from './pages/HouseholdPage';
@@ -141,10 +142,7 @@ function AppContent() {
               )
             }
           />
-          <Route
-            path="/"
-            element={<Navigate to={user ? "/dashboard" : "/login"} replace />}
-          />
+          <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
         </Routes>
       </AnimatePresence>
     </Router>
@@ -155,15 +153,17 @@ function App() {
   return (
     <AuthProvider>
       <NotificationProvider>
-        <ChoreProvider>
-          <LeaderboardProvider>
-            <CalendarProvider>
-              <CollaborationProvider>
-                <AppContent />
-              </CollaborationProvider>
-            </CalendarProvider>
-          </LeaderboardProvider>
-        </ChoreProvider>
+        <CategoryProvider>
+          <ChoreProvider>
+            <LeaderboardProvider>
+              <CalendarProvider>
+                <CollaborationProvider>
+                  <AppContent />
+                </CollaborationProvider>
+              </CalendarProvider>
+            </LeaderboardProvider>
+          </ChoreProvider>
+        </CategoryProvider>
       </NotificationProvider>
     </AuthProvider>
   );
