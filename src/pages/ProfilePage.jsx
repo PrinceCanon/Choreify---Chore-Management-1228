@@ -3,18 +3,23 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../contexts/NotificationContext';
 import { useChores } from '../contexts/ChoreContext';
+import { useCalendar } from '../contexts/CalendarContext';
 import AvatarSelector from '../components/AvatarSelector';
+import CalendarConnect from '../components/CalendarConnect';
 import SafeIcon from '../common/SafeIcon';
 import * as FiIcons from 'react-icons/fi';
 
-const { FiUser, FiMail, FiEdit, FiSave, FiX, FiBell, FiSettings, FiLogOut, FiCamera } = FiIcons;
+const { FiUser, FiMail, FiEdit, FiSave, FiX, FiBell, FiSettings, FiLogOut, FiCamera, FiCalendar, FiLink } = FiIcons;
 
 const ProfilePage = () => {
   const { user, updateProfile, logout } = useAuth();
   const { showNotification, permission, requestPermission } = useNotification();
   const { chores, getChoresByStatus } = useChores();
+  const { connected, provider, formatProviderName } = useCalendar();
+  
   const [isEditing, setIsEditing] = useState(false);
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+  const [showCalendarConnect, setShowCalendarConnect] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -25,6 +30,7 @@ const ProfilePage = () => {
   const pendingChores = getChoresByStatus(false);
   const userCompletedChores = completedChores.filter(chore => chore.completedBy === user?.id);
   const userAssignedChores = chores.filter(chore => chore.assignedTo === user?.name);
+  
   const userCompletedThisWeek = userCompletedChores.filter(chore => {
     const completedDate = new Date(chore.completedAt);
     const weekAgo = new Date();
@@ -38,10 +44,7 @@ const ProfilePage = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSave = () => {
@@ -144,11 +147,7 @@ const ProfilePage = () => {
           <div className="relative mr-6">
             <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
               {user?.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className="w-full h-full object-cover"
-                />
+                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-primary-100 text-primary-700 flex items-center justify-center text-2xl font-bold">
                   {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
@@ -189,7 +188,6 @@ const ProfilePage = () => {
               <p className="text-gray-900 py-2">{user?.name || 'Not set'}</p>
             )}
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <SafeIcon icon={FiMail} className="w-4 h-4 inline mr-1" />
@@ -221,8 +219,43 @@ const ProfilePage = () => {
           <SafeIcon icon={FiSettings} className="w-5 h-5 inline mr-2" />
           Preferences
         </h2>
-
         <div className="space-y-6">
+          {/* Calendar Integration */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-medium text-gray-900 flex items-center">
+                <SafeIcon icon={FiCalendar} className="w-4 h-4 mr-2" />
+                Calendar Integration
+              </h3>
+              <p className="text-sm text-gray-600">
+                {connected 
+                  ? `Connected to ${formatProviderName(provider)} Calendar` 
+                  : 'Sync chores with your favorite calendar app'}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowCalendarConnect(true)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                connected
+                  ? 'bg-primary-100 text-primary-800 hover:bg-primary-200'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {connected ? (
+                <>
+                  <SafeIcon icon={FiLink} className="w-4 h-4 mr-2 inline" />
+                  Manage
+                </>
+              ) : (
+                <>
+                  <SafeIcon icon={FiCalendar} className="w-4 h-4 mr-2 inline" />
+                  Connect
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Browser Notifications */}
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-medium text-gray-900">Browser Notifications</h3>
@@ -297,6 +330,12 @@ const ProfilePage = () => {
         onClose={() => setShowAvatarSelector(false)}
         onSelect={handleAvatarSelect}
         currentAvatar={user?.avatar}
+      />
+
+      {/* Calendar Connect Modal */}
+      <CalendarConnect
+        isOpen={showCalendarConnect}
+        onClose={() => setShowCalendarConnect(false)}
       />
     </div>
   );

@@ -3,28 +3,43 @@ import { motion } from 'framer-motion';
 import { useChores } from '../contexts/ChoreContext';
 import { useAuth } from '../hooks/useAuth';
 import { useLeaderboard } from '../contexts/LeaderboardContext';
+import { useCollaboration } from '../contexts/CollaborationContext';
 import ChoreCard from '../components/ChoreCard';
 import ChoreModal from '../components/ChoreModal';
+import ActivityFeed from '../components/ActivityFeed';
+import UpForGrabsModal from '../components/UpForGrabsModal';
 import SafeIcon from '../common/SafeIcon';
 import * as FiIcons from 'react-icons/fi';
 
-const { FiPlus, FiFilter, FiCheckSquare, FiClock, FiAlertTriangle, FiTrendingUp, FiTrophy } = FiIcons;
+const { 
+  FiPlus, 
+  FiFilter, 
+  FiCheckSquare, 
+  FiClock, 
+  FiAlertTriangle, 
+  FiTrendingUp, 
+  FiTrophy,
+  FiShare
+} = FiIcons;
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const {
-    chores,
-    addChore,
-    updateChore,
-    completeChore,
-    uncompleteChore,
+  const { 
+    chores, 
+    addChore, 
+    updateChore, 
+    completeChore: markChoreComplete, 
+    uncompleteChore, 
     deleteChore,
     getChoresByStatus,
     getOverdueChores,
     getTodaysChores
   } = useChores();
   const { getUserPoints, getUserRank, leaderboardEnabled } = useLeaderboard();
+  const { getAvailableChores } = useCollaboration();
+  
   const [showModal, setShowModal] = useState(false);
+  const [showUpForGrabsModal, setShowUpForGrabsModal] = useState(false);
   const [editingChore, setEditingChore] = useState(null);
   const [filter, setFilter] = useState('all');
   const [viewMode, setViewMode] = useState('pending');
@@ -33,7 +48,8 @@ const Dashboard = () => {
   const pendingChores = getChoresByStatus(false);
   const overdueChores = getOverdueChores();
   const todaysChores = getTodaysChores();
-
+  const availableChores = getAvailableChores();
+  
   const userPoints = getUserPoints(user?.id);
   const userRank = getUserRank(user?.id);
 
@@ -46,12 +62,14 @@ const Dashboard = () => {
     setEditingChore(null);
   };
 
-  const handleCompleteChore = (choreId) => {
+  const handleCompleteChore = (choreId, isComplete, pendingApproval = true) => {
     const chore = chores.find(c => c.id === choreId);
+    
     if (chore.completed) {
       uncompleteChore(choreId);
     } else {
-      completeChore(choreId);
+      // When marking complete, we may need approval
+      markChoreComplete(choreId, pendingApproval);
     }
   };
 
@@ -84,6 +102,8 @@ const Dashboard = () => {
       );
     } else if (filter === 'mine') {
       filtered = filtered.filter(chore => chore.assignedTo === user?.name);
+    } else if (filter === 'needsApproval') {
+      filtered = chores.filter(chore => chore.completed && chore.pendingApproval);
     }
 
     return filtered;
@@ -132,158 +152,186 @@ const Dashboard = () => {
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
             Welcome{user?.name ? `, ${user.name}` : ''}! 👋
           </h1>
-          <p className="text-gray-600 mt-1">
-            Let's get those chores done today
-          </p>
+          <p className="text-gray-600 mt-1">Let's get those chores done today</p>
         </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setShowModal(true)}
-          className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center mt-4 sm:mt-0"
-        >
-          <SafeIcon icon={FiPlus} className="w-5 h-5 mr-2" />
-          Add Chore
-        </motion.button>
+        
+        <div className="flex space-x-2 mt-4 sm:mt-0">
+          {availableChores.length > 0 && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowUpForGrabsModal(true)}
+              className="bg-primary-100 text-primary-800 font-medium py-3 px-6 rounded-xl transition-all duration-200 flex items-center"
+            >
+              <SafeIcon icon={FiShare} className="w-5 h-5 mr-2" />
+              {availableChores.length} {availableChores.length === 1 ? 'Chore' : 'Chores'} Up For Grabs
+            </motion.button>
+          )}
+          
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowModal(true)}
+            className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center"
+          >
+            <SafeIcon icon={FiPlus} className="w-5 h-5 mr-2" />
+            Add Chore
+          </motion.button>
+        </div>
       </motion.div>
 
-      {/* User Stats & Leaderboard Info */}
-      {leaderboardEnabled && userRank && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-2xl shadow-lg p-6 text-white"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <SafeIcon icon={FiTrophy} className="w-8 h-8 mr-3" />
-              <div>
-                <h3 className="text-lg font-semibold">Your Ranking</h3>
-                <p className="text-yellow-100">Keep up the great work!</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          {/* User Stats & Leaderboard Info */}
+          {leaderboardEnabled && userRank && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-2xl shadow-lg p-6 text-white"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <SafeIcon icon={FiTrophy} className="w-8 h-8 mr-3" />
+                  <div>
+                    <h3 className="text-lg font-semibold">Your Ranking</h3>
+                    <p className="text-yellow-100">Keep up the great work!</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold">#{userRank}</div>
+                  <div className="text-sm text-yellow-100">{userPoints} points</div>
+                </div>
               </div>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold">#{userRank}</div>
-              <div className="text-sm text-yellow-100">{userPoints} points</div>
-            </div>
-          </div>
-        </motion.div>
-      )}
+            </motion.div>
+          )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => (
-          <motion.div
-            key={stat.name}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 p-6 ${stat.bgColor}`}
-          >
-            <div className="flex items-center">
-              <div className={`p-3 rounded-lg ${stat.color} ${stat.bgColor}`}>
-                <SafeIcon icon={stat.icon} className="w-6 h-6" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Filters and View Toggle */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setViewMode('pending')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              viewMode === 'pending'
-                ? 'bg-primary-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Pending ({pendingChores.length})
-          </button>
-          <button
-            onClick={() => setViewMode('completed')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              viewMode === 'completed'
-                ? 'bg-success-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Completed ({completedChores.length})
-          </button>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <SafeIcon icon={FiFilter} className="w-5 h-5 text-gray-400" />
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          >
-            <option value="all">All Chores</option>
-            <option value="today">Due Today</option>
-            <option value="overdue">Overdue</option>
-            <option value="mine">Assigned to Me</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Chores List */}
-      <div className="space-y-4">
-        {getFilteredChores().length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-12 bg-white rounded-2xl shadow-sm border border-gray-100 p-8"
-          >
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <SafeIcon icon={FiCheckSquare} className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {viewMode === 'completed' ? 'No completed chores yet' : 'No chores found'}
-            </h3>
-            <p className="text-gray-600 mb-4">
-              {viewMode === 'completed'
-                ? 'Complete some chores to see them here'
-                : 'Add your first chore to get started'}
-            </p>
-            {viewMode === 'pending' && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg transition-all duration-200"
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {stats.map((stat, index) => (
+              <motion.div
+                key={stat.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 p-6 ${stat.bgColor}`}
               >
-                <SafeIcon icon={FiPlus} className="w-5 h-5 mr-2 inline" />
-                Add Your First Chore
-              </button>
-            )}
-          </motion.div>
-        ) : (
-          <div className="grid gap-4">
-            {getFilteredChores().map((chore) => (
-              <ChoreCard
-                key={chore.id}
-                chore={chore}
-                onComplete={handleCompleteChore}
-                onEdit={openEditModal}
-                onDelete={handleDeleteChore}
-              />
+                <div className="flex items-center">
+                  <div className={`p-3 rounded-lg ${stat.color} ${stat.bgColor}`}>
+                    <SafeIcon icon={stat.icon} className="w-6 h-6" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">{stat.name}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  </div>
+                </div>
+              </motion.div>
             ))}
           </div>
-        )}
+
+          {/* Filters and View Toggle */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setViewMode('pending')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  viewMode === 'pending'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Pending ({pendingChores.length})
+              </button>
+              <button
+                onClick={() => setViewMode('completed')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  viewMode === 'completed'
+                    ? 'bg-success-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Completed ({completedChores.length})
+              </button>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <SafeIcon icon={FiFilter} className="w-5 h-5 text-gray-400" />
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              >
+                <option value="all">All Chores</option>
+                <option value="today">Due Today</option>
+                <option value="overdue">Overdue</option>
+                <option value="mine">Assigned to Me</option>
+                <option value="needsApproval">Needs Approval</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Chores List */}
+          <div className="space-y-4">
+            {getFilteredChores().length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12 bg-white rounded-2xl shadow-sm border border-gray-100 p-8"
+              >
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <SafeIcon icon={FiCheckSquare} className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {viewMode === 'completed' ? 'No completed chores yet' : 'No chores found'}
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  {viewMode === 'completed'
+                    ? 'Complete some chores to see them here'
+                    : 'Add your first chore to get started'}
+                </p>
+                {viewMode === 'pending' && (
+                  <button
+                    onClick={() => setShowModal(true)}
+                    className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg transition-all duration-200"
+                  >
+                    <SafeIcon icon={FiPlus} className="w-5 h-5 mr-2 inline" />
+                    Add Your First Chore
+                  </button>
+                )}
+              </motion.div>
+            ) : (
+              <div className="grid gap-4">
+                {getFilteredChores().map((chore) => (
+                  <ChoreCard
+                    key={chore.id}
+                    chore={chore}
+                    onComplete={handleCompleteChore}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteChore}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sidebar Content - Activity Feed */}
+        <div className="space-y-6">
+          <ActivityFeed />
+        </div>
       </div>
 
-      {/* Add/Edit Chore Modal */}
+      {/* Modals */}
       <ChoreModal
         isOpen={showModal}
         onClose={closeModal}
         onSubmit={editingChore ? handleEditChore : handleAddChore}
         chore={editingChore}
+      />
+      
+      <UpForGrabsModal
+        isOpen={showUpForGrabsModal}
+        onClose={() => setShowUpForGrabsModal(false)}
       />
     </div>
   );

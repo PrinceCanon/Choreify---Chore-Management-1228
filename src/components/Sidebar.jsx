@@ -6,7 +6,16 @@ import { useLeaderboard } from '../contexts/LeaderboardContext';
 import SafeIcon from '../common/SafeIcon';
 import * as FiIcons from 'react-icons/fi';
 
-const { FiHome, FiUsers, FiUser, FiCheckSquare, FiClock, FiTrendingUp, FiTrophy } = FiIcons;
+const { 
+  FiHome, 
+  FiUsers, 
+  FiUser, 
+  FiCheckSquare, 
+  FiClock, 
+  FiTrendingUp, 
+  FiTrophy,
+  FiActivity
+} = FiIcons;
 
 const Sidebar = () => {
   const location = useLocation();
@@ -16,6 +25,7 @@ const Sidebar = () => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: FiHome },
     { name: 'Household', href: '/household', icon: FiUsers },
+    { name: 'Activity', href: '/activity', icon: FiActivity },
     ...(leaderboardEnabled ? [{ name: 'Leaderboard', href: '/leaderboard', icon: FiTrophy }] : []),
     { name: 'Profile', href: '/profile', icon: FiUser },
   ];
@@ -23,7 +33,7 @@ const Sidebar = () => {
   // Calculate dynamic stats
   const completedChores = getChoresByStatus(true);
   const overdueChores = getOverdueChores();
-  
+
   const completedToday = completedChores.filter(chore => {
     const completedDate = new Date(chore.completedAt);
     const today = new Date();
@@ -40,7 +50,10 @@ const Sidebar = () => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block fixed left-0 w-64 bg-white shadow-lg border-r border-gray-200 z-30" style={{ top: '4rem', height: 'calc(100vh - 4rem)' }}>
+      <div 
+        className="hidden lg:block fixed left-0 w-64 bg-white shadow-lg border-r border-gray-200 z-30"
+        style={{ top: '4rem', height: 'calc(100vh - 4rem)' }}
+      >
         <div className="flex flex-col h-full">
           {/* Navigation */}
           <nav className="flex-1 px-4 pt-6 pb-4 overflow-y-auto">
@@ -76,7 +89,7 @@ const Sidebar = () => {
               Quick Stats
             </h3>
             <div className="space-y-3">
-              <motion.div 
+              <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="flex items-center p-3 bg-white rounded-lg shadow-sm"
               >
@@ -88,7 +101,8 @@ const Sidebar = () => {
                   <p className="text-lg font-semibold text-gray-900">{completedToday.length}</p>
                 </div>
               </motion.div>
-              <motion.div 
+
+              <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="flex items-center p-3 bg-white rounded-lg shadow-sm"
               >
@@ -100,7 +114,8 @@ const Sidebar = () => {
                   <p className="text-lg font-semibold text-gray-900">{overdueChores.length}</p>
                 </div>
               </motion.div>
-              <motion.div 
+
+              <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="flex items-center p-3 bg-white rounded-lg shadow-sm"
               >

@@ -5,11 +5,15 @@ import AuthProvider from './contexts/AuthContext';
 import ChoreProvider from './contexts/ChoreContext';
 import NotificationProvider from './contexts/NotificationContext';
 import LeaderboardProvider from './contexts/LeaderboardContext';
+import CalendarProvider from './contexts/CalendarContext';
+import CollaborationProvider from './contexts/CollaborationContext';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import HouseholdPage from './pages/HouseholdPage';
 import ProfilePage from './pages/ProfilePage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import CalendarAuthPage from './pages/CalendarAuthPage';
+import ActivityFeedPage from './pages/ActivityFeedPage';
 import Layout from './components/Layout';
 import { useAuth } from './hooks/useAuth';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -114,6 +118,30 @@ function AppContent() {
             }
           />
           <Route
+            path="/calendar-auth"
+            element={
+              user ? (
+                <Layout>
+                  <CalendarAuthPage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/activity"
+            element={
+              user ? (
+                <Layout>
+                  <ActivityFeedPage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
             path="/"
             element={<Navigate to={user ? "/dashboard" : "/login"} replace />}
           />
@@ -129,7 +157,11 @@ function App() {
       <NotificationProvider>
         <ChoreProvider>
           <LeaderboardProvider>
-            <AppContent />
+            <CalendarProvider>
+              <CollaborationProvider>
+                <AppContent />
+              </CollaborationProvider>
+            </CalendarProvider>
           </LeaderboardProvider>
         </ChoreProvider>
       </NotificationProvider>
